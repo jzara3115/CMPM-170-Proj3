@@ -3,6 +3,8 @@
 A browser game prototype inspired by Breakout and Mr. Do!, based on the team's **CMPM 170 Design Doc - Breakin**.
 基于团队设计文档的浏览器游戏原型，玩法参考 Breakout 与 Mr. Do!。
 
+WEB BUILD: https://jzara3115.github.io/CMPM-170-Proj3/
+
 This work covers project setup and dirt-block/fruit gameplay code. The player and ball controller is a temporary demo for testing integration; teammates can replace it.
 本次工作包含项目环境搭建，以及土块和水果的玩法代码。玩家与球的控制器用于演示和联调，可由队友替换。
 
