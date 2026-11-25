@@ -214,3 +214,19 @@ test('the last lost life ends the round and prevents further play', () => {
   assert.equal(controller.lives, 0);
   assert.equal(eventCount(events, 'life-lost'), 1);
 });
+
+test('powerup pickup creates a one-use empowered throw', () => {
+  const { controller, system } = setup();
+  system.powerups.push({
+    id: 'powerup-test', type: 'burst',
+    x: controller.player.x, y: controller.player.y,
+    width: 20, height: 20, vy: 0, state: 'resting',
+  });
+  controller.start();
+  controller.update(0.01);
+  assert.equal(controller.powerups, 1);
+
+  assert.equal(controller.throwBall(), true);
+  assert.equal(controller.powerups, 0);
+  assert.equal(controller.balls[0].empowered, true);
+});

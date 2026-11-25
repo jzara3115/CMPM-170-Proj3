@@ -1,5 +1,19 @@
 // Temporary player/ball adapter. Teammates can replace it without changing the block/fruit module.
 const overlaps = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+const segmentIntersectsRect = (x1, y1, x2, y2, rect) => {
+  const left = rect.x, right = rect.x + rect.width, top = rect.y, bottom = rect.y + rect.height;
+  const dx = x2 - x1, dy = y2 - y1;
+  let near = 0, far = 1;
+  for (const [p, q, r] of [[-dx, x1 - left, left], [dx, right - x1, right], [-dy, y1 - top, top], [dy, bottom - y1, bottom]]) {
+    if (p === 0) { if (q > 0) return false; }
+    else {
+      const t = q / p;
+      if (p < 0) { if (t > far) return false; near = Math.max(near, t); }
+      else { if (t < near) return false; far = Math.min(far, t); }
+    }
+  }
+  return near <= far;
+};
 export class DemoController {
   constructor(system, { width = 900, floorY = 604, stage = 0, lives = 3, onEvent = () => {} } = {}) {
     this.system = system;
@@ -17,12 +31,18 @@ export class DemoController {
     this.hasLaunched = false;
     this.allHeldTime = 0;
     this.lifeNotice = '';
+    this.powerups = 0;
   }
   start() { this.phase = 'playing'; }
   throwBall() {
     if (this.phase !== 'playing' || this.heldBalls === 0 || this.launchCooldown > 0) return false;
+    const empowered = this.powerups > 0;
+    if (empowered) {
+      this.powerups--;
+      this.onEvent({ type: 'powerup-used' });
+    }
     const speed = 1 + this.stage * 0.1;
-    this.balls.push({ x: this.player.x + this.player.width / 2 + this.launchSide * 12, y: this.player.y - 9, vx: this.launchSide * 165 * speed, vy: -850 * speed, radius: 7, state: 'airborne', floorTime: 0 });
+    this.balls.push({ x: this.player.x + this.player.width / 2 + this.launchSide * 12, y: this.player.y - 9, vx: this.launchSide * 165 * speed, vy: -850 * speed, radius: 7, state: 'airborne', floorTime: 0, empowered });
     this.launchSide *= -1;
     this.heldBalls--;
     this.launchCooldown = 0.18;
@@ -60,7 +80,18 @@ export class DemoController {
       if (ball.x > this.width - 36 - ball.radius) { ball.x = this.width - 36 - ball.radius; ball.vx = -Math.abs(ball.vx); }
       if (ball.y < 58 + ball.radius) { ball.y = 58 + ball.radius; ball.vy = Math.abs(ball.vy); }
       for (const block of this.system.blocks) {
-        if (block.destroyed || !overlaps({ x: ball.x - ball.radius, y: ball.y - ball.radius, width: ball.radius * 2, height: ball.radius * 2 }, block)) continue;
+        if (block.destroyed) continue;
+        const ballRect = { x: ball.x - ball.radius, y: ball.y - ball.radius, width: ball.radius * 2, height: ball.radius * 2 };
+        if (ball.empowered) {
+          const hitTrajectory = segmentIntersectsRect(oldX, oldY, ball.x, ball.y, block)
+            || overlaps(ballRect, block);
+          if (hitTrajectory) {
+            let remaining = block.hp;
+            for (let hit = 0; hit < remaining; hit++) this.system.hitBlock(block.id);
+          }
+          continue;
+        }
+        if (!overlaps(ballRect, block)) continue;
         const result = this.system.hitBlock(block.id);
         if (result.response !== 'bounce') continue;
         if (oldY + ball.radius <= block.y) { ball.y = block.y - ball.radius - 0.1; ball.vy = -Math.abs(ball.vy); }
@@ -84,6 +115,11 @@ export class DemoController {
     }
     this.balls = kept;
     this.system.collectInRect(this.player);
+    const powerupsCollected = this.system.collectPowerupsInRect(this.player);
+    if (powerupsCollected > 0) {
+      this.powerups += powerupsCollected;
+      this.onEvent({ type: 'powerups-changed', count: this.powerups });
+    }
     if (dropped) this.loseLife('A ball stayed on the ground too long.');
     if (this.phase !== 'playing') return;
     // A short serve grace avoids an impossible instant loss after catching the final ball.

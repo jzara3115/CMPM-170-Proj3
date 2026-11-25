@@ -42,6 +42,7 @@ canvas { display: block; width: 100%; height: auto; aspect-ratio: 900 / 650; tou
 .swatch { display: inline-block; width: 14px; height: 14px; border: 1px solid #666; }
 .swatch.player { background: #467db3; }
 .swatch.ball { background: #202020; border-radius: 50%; }
+.swatch.powerup-ball { background: #f2c94c; border-color: #8a5a00; border-radius: 50%; }
 .swatch.fruit { background: #df852b; border-color: #df852b; border-radius: 50%; }
 .swatch.top { background: #dbe6d6; }
 .swatch.hard { background: #c7c7c7; }

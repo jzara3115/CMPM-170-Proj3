@@ -4,6 +4,10 @@ export const SOIL_TYPES = Object.freeze({
   CONDENSED: 'condensed',
 });
 
+export const POWERUP_TYPES = Object.freeze({
+  BURST: 'burst',
+});
+
 const FRUIT_WIDTH = 16;
 const FRUIT_HEIGHT = 18;
 const SUPPORT_EPSILON = 0.05;
@@ -19,10 +23,13 @@ function overlapsHorizontally(a, b) {
 
 /** Dirt durability, fruit reveal, gravity, and collection; dt is in seconds. */
 export class BlockFruitSystem {
-  constructor({ blocks = [], floorY = 600, gravity = 760, onEvent = () => {} } = {}) {
+  constructor({ blocks = [], floorY = 600, gravity = 760, onEvent = () => {}, powerupChance = 0.18, powerupLimit = 3, rng = Math.random } = {}) {
     this.floorY = floorY;
     this.gravity = gravity;
     this.onEvent = onEvent;
+    this.powerupChance = powerupChance;
+    this.powerupLimit = powerupLimit;
+    this.rng = rng;
     this.reset(blocks);
   }
 
@@ -32,6 +39,10 @@ export class BlockFruitSystem {
 
   get totalFruit() {
     return this._totalFruit;
+  }
+
+  get remainingPowerups() {
+    return this.powerups.filter(powerup => powerup.state !== 'collected').length;
   }
 
   reset(blocks = this._layout ?? []) {
@@ -66,6 +77,8 @@ export class BlockFruitSystem {
     this._totalFruit = this.fruits.length;
     this._remainingFruit = this._totalFruit;
     this._completionEmitted = false;
+    this._powerupsEarned = 0;
+    this.powerups = [];
     this._emitCount();
   }
 
@@ -81,6 +94,21 @@ export class BlockFruitSystem {
 
     block.destroyed = true;
     this.onEvent({ type: 'block-destroyed', blockId: block.id, block: { ...block } });
+    if (this._powerupsEarned < this.powerupLimit && this.rng() < this.powerupChance) {
+      this._powerupsEarned++;
+      const powerup = {
+        id: `powerup-${block.id}`,
+        type: POWERUP_TYPES.BURST,
+        x: block.x + block.width / 2 - 10,
+        y: block.y + block.height / 2 - 10,
+        width: 20,
+        height: 20,
+        vy: 0,
+        state: 'falling',
+      };
+      this.powerups.push(powerup);
+      this.onEvent({ type: 'powerup-dropped', powerupId: powerup.id, powerup: { ...powerup } });
+    }
     const fruit = this._fruitsByBlockId.get(block.id);
     if (fruit && fruit.state === 'hidden') {
       fruit.state = 'falling';
@@ -130,6 +158,30 @@ export class BlockFruitSystem {
         fruit.vy = nextVelocity;
       }
     }
+
+    for (const powerup of this.powerups) {
+      if (powerup.state === 'collected') continue;
+      const oldBottom = powerup.y + powerup.height;
+
+      if (powerup.state === 'resting' && oldBottom >= this.floorY - SUPPORT_EPSILON) {
+        powerup.vy = 0;
+        powerup.y = this.floorY - powerup.height;
+        continue;
+      }
+      powerup.state = 'falling';
+
+      const nextBottom = oldBottom + powerup.vy * dt + 0.5 * this.gravity * dt * dt;
+      const nextVelocity = powerup.vy + this.gravity * dt;
+
+      if (nextBottom >= this.floorY) {
+        powerup.y = this.floorY - powerup.height;
+        powerup.vy = 0;
+        powerup.state = 'resting';
+      } else {
+        powerup.y = nextBottom - powerup.height;
+        powerup.vy = nextVelocity;
+      }
+    }
   }
 
   collectInRect(rect) {
@@ -149,6 +201,18 @@ export class BlockFruitSystem {
     if (collected > 0 && this._remainingFruit === 0 && !this._completionEmitted) {
       this._completionEmitted = true;
       this.onEvent({ type: 'all-fruit-collected', ...this._countPayload() });
+    }
+    return collected;
+  }
+
+  collectPowerupsInRect(rect) {
+    let collected = 0;
+    for (const powerup of this.powerups) {
+      if (powerup.state === 'collected' || !rectsOverlap(powerup, rect)) continue;
+      powerup.state = 'collected';
+      powerup.vy = 0;
+      collected++;
+      this.onEvent({ type: 'powerup-collected', powerupId: powerup.id, powerup: { ...powerup } });
     }
     return collected;
   }

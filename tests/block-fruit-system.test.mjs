@@ -217,3 +217,56 @@ test('runtime damage and resets do not mutate authored level data', () => {
   assert.notEqual(system.blocks, recipe);
   assert.notEqual(system.blocks[0], recipe[0]);
 });
+
+test('powerups drop occasionally and are capped at three per level', () => {
+  const events = [];
+  const system = new BlockFruitSystem({
+    blocks: [block('a'), block('b'), block('c'), block('d')],
+    rng: () => 0,
+    powerupChance: 1,
+    powerupLimit: 3,
+    onEvent: event => events.push(event),
+  });
+
+  system.hitBlock('a');
+  system.hitBlock('b');
+  system.hitBlock('c');
+  system.hitBlock('d');
+
+  assert.equal(system.powerups.length, 3);
+  assert.equal(system.remainingPowerups, 3);
+  assert.equal(countEvents(events, 'powerup-dropped'), 3);
+});
+
+test('powerups fall, rest, and are collected only on player overlap', () => {
+  const system = new BlockFruitSystem({
+    blocks: [block('drop')],
+    floorY: 300,
+    rng: () => 0,
+    powerupChance: 1,
+  });
+  system.hitBlock('drop');
+  advance(system, 2);
+
+  const powerup = system.powerups[0];
+  assert.equal(powerup.state, 'resting');
+  assert.equal(system.collectPowerupsInRect({ x: 500, y: 260, width: 50, height: 40 }), 0);
+  assert.equal(system.collectPowerupsInRect(powerup), 1);
+  assert.equal(powerup.state, 'collected');
+  assert.equal(system.remainingPowerups, 0);
+});
+
+test('powerups fall through live blocks to the floor', () => {
+  const system = new BlockFruitSystem({
+    blocks: [block('drop')],
+    floorY: 300,
+    rng: () => 0,
+    powerupChance: 1,
+  });
+  system.hitBlock('drop');
+  advance(system, 2);
+
+  const powerup = system.powerups[0];
+  assert.equal(powerup.state, 'resting');
+  assert.equal(powerup.y + powerup.height, 300);
+});

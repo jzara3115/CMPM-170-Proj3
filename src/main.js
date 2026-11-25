@@ -69,6 +69,7 @@ function updateHud() {
   $('lives').textContent = String(controller.lives);
   $('lives').setAttribute('aria-label', `${controller.lives} lives`);
   $('balls-count').textContent = `${controller.heldBalls} / 3`;
+  $('powerup-count').textContent = `${controller.powerups} / 3`;
   const statuses = { ready: 'Ready', playing: controller.hasLaunched ? 'Playing' : 'Press Space or click to throw', paused: 'Paused', 'level-clear': 'Level complete', 'game-over': 'Game over' };
   $('game-status').textContent = statuses[controller.phase];
   if (controller.phase === 'playing' && clock > noticeUntil) {
