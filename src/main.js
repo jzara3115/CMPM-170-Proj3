@@ -1,17 +1,22 @@
 import { BlockFruitSystem } from './game/block-fruit-system.js';
 import { LEVELS } from './game/levels.js';
 import { DemoController } from './demo/controller.js';
-import { renderPrototype } from './render.js';
+import { createRenderer } from './render.js';
 
 const $ = id => document.getElementById(id);
 const canvas = $('game');
-const ctx = canvas.getContext('2d');
-const W = 900, H = 650, FLOOR = 604;
+const renderer = createRenderer(canvas.getContext('2d'));
+const W = 900, FLOOR = 604;
 const input = { left: false, right: false };
 let stage = 0, system, controller, previous = 0, accumulator = 0, pendingClear = false;
 let clock = 0, noticeUntil = 0;
 
 function onEvent(event) {
+  if (event.type === 'block-destroyed') renderer.onBlockDestroyed(event.block);
+  if (event.type === 'powerups-changed') {
+    $('round-notice').textContent = 'Burst ready! Your next throw pierces soil.';
+    noticeUntil = clock + 2.3;
+  }
   if (event.type === 'all-fruit-collected') pendingClear = true;
   if (event.type === 'life-lost') {
     $('round-notice').textContent = event.reason;
@@ -20,6 +25,7 @@ function onEvent(event) {
 }
 function loadLevel(index, lives = 3, ready = true) {
   stage = index;
+  renderer.reset();
   pendingClear = false;
   system = new BlockFruitSystem({ blocks: LEVELS[stage].blocks, floorY: FLOOR, gravity: 760, onEvent });
   controller = new DemoController(system, { width: W, floorY: FLOOR, stage, lives, onEvent });
@@ -37,7 +43,7 @@ function showOverlay() {
   $('pause-button').textContent = phase === 'paused' ? 'Resume' : 'Pause';
   $('pause-button').setAttribute('aria-label', phase === 'paused' ? 'Resume game' : 'Pause game');
   const states = {
-    ready: ['Breakin', 'Break blocks and collect all fruit. Keep at least one ball in the air.', 'Start', 'A / D to move. Space or click to throw.'],
+    ready: ['Breakin', 'Break blocks and collect all fruit. Keep at least one ball in the air.', 'Start', 'Move with A / D or ← / →. Throw with Space or click.'],
     paused: ['Paused', 'The game is paused.', 'Resume', 'Press P or Esc to resume.'],
     'level-clear': [stage === LEVELS.length - 1 ? 'Prototype complete' : 'Level complete', `Collected ${system.totalFruit} / ${system.totalFruit} fruit.`, stage === LEVELS.length - 1 ? 'Play again' : 'Next level', stage === LEVELS.length - 1 ? 'All three sample levels cleared.' : 'The balls move faster in the next level.'],
     'game-over': ['Game over', 'All lives used. Catch dropped balls before the timer runs out.', 'Try again', 'Press R to restart.'],
@@ -70,6 +76,7 @@ function updateHud() {
   $('lives').setAttribute('aria-label', `${controller.lives} lives`);
   $('balls-count').textContent = `${controller.heldBalls} / 3`;
   $('powerup-count').textContent = `${controller.powerups} / 3`;
+  $('burst-stat').classList.toggle('charged', controller.powerups > 0);
   const statuses = { ready: 'Ready', playing: controller.hasLaunched ? 'Playing' : 'Press Space or click to throw', paused: 'Paused', 'level-clear': 'Level complete', 'game-over': 'Game over' };
   $('game-status').textContent = statuses[controller.phase];
   if (controller.phase === 'playing' && clock > noticeUntil) {
@@ -90,7 +97,9 @@ function tick(time) {
       if (controller.phase === 'game-over') showOverlay();
     }
   } else accumulator = 0;
-  renderPrototype(ctx, system, controller); updateHud(); requestAnimationFrame(tick);
+  renderer.render(system, controller, controller.phase === 'playing' ? dt : 0);
+  updateHud();
+  requestAnimationFrame(tick);
 }
 canvas.tabIndex = 0;
 $('start-button').addEventListener('click', advance);

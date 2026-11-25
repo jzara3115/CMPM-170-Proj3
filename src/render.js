@@ -1,52 +1,151 @@
-// Plain geometry deliberately keeps this prototype focused on mechanics.
-export function renderPrototype(ctx, system, controller) {
-  const width = 900, height = 650, floor = 604;
-  ctx.clearRect(0, 0, width, height);
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, width, height);
-  ctx.strokeStyle = '#707070';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(36, 58, width - 72, floor - 58);
-  const colors = { top: '#dbe6d6', hard: '#c7c7c7', condensed: '#929292' };
-  for (const block of system.blocks) {
-    if (block.destroyed) continue;
-    ctx.fillStyle = colors[block.type] || colors.hard;
-    ctx.fillRect(block.x, block.y, block.width, block.height);
-    ctx.strokeStyle = '#666666'; ctx.lineWidth = 1;
-    ctx.strokeRect(block.x, block.y, block.width, block.height);
-    ctx.fillStyle = '#202020'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '14px Arial, sans-serif';
-    ctx.fillText(block.type === 'top' ? 'S' : String(block.hp), block.x + block.width / 2, block.y + block.height / 2);
-  }
-  for (const fruit of system.fruits) {
-    if (fruit.state === 'hidden' || fruit.state === 'collected') continue;
-    ctx.fillStyle = '#df852b'; ctx.beginPath();
-    ctx.arc(fruit.x + fruit.width / 2, fruit.y + fruit.height / 2, fruit.width / 2, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  const player = controller.player;
-  ctx.fillStyle = '#467db3';
-  ctx.fillRect(player.x, player.y, player.width, player.height);
-  ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '16px Arial, sans-serif';
-  ctx.fillText('P', player.x + player.width / 2, player.y + player.height / 2);
-  for (const ball of controller.balls) {
-    if (ball.state === 'grounded') {
-      ctx.strokeStyle = '#df852b'; ctx.lineWidth = 2; ctx.beginPath();
-      ctx.arc(ball.x, ball.y, 12, -Math.PI / 2, -Math.PI / 2 + (1 - ball.floorTime / 3) * Math.PI * 2);
-      ctx.stroke();
-    }
-    ctx.fillStyle = ball.empowered ? '#f2c94c' : '#202020'; ctx.beginPath();
-    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2); ctx.fill();
-    if (ball.empowered) {
-      ctx.strokeStyle = '#8a5a00'; ctx.lineWidth = 2;
-      ctx.stroke();
+const soilSprites = { top: 'topsoil', hard: 'hard-soil', condensed: 'dense-soil' };
+const soilDebris = {
+  top: ['#a9dc63', '#b07845', '#ebbb6b'],
+  hard: ['#ffaf76', '#bc6748', '#8f493c'],
+  condensed: ['#d4bad9', '#a584b0', '#76567f'],
+};
+const fruitSprites = ['orange', 'apple', 'pear'];
+const sprites = {};
+for (const name of [
+  'cavern', 'clown-1', 'clown-2', 'ball', 'burst-ball', 'burst', ...fruitSprites,
+  ...Object.values(soilSprites).flatMap(soil => [1, 2, 3].map(variant => `${soil}-${variant}`)),
+]) {
+  const image = new Image();
+  image.src = new URL(`../assets/${name}.png`, import.meta.url);
+  sprites[name] = image;
+}
+
+const TAU = Math.PI * 2;
+
+export function createRenderer(ctx) {
+  let previousPlayerX = null;
+  let facing = 1;
+  let steps = 0;
+  let particles = [];
+
+  function sprite(name, x, y, width, height) {
+    const image = sprites[name];
+    if (image.complete && image.naturalWidth > 0) {
+      ctx.drawImage(image, Math.round(x), Math.round(y), width, height);
     }
   }
-  for (const powerup of system.powerups) {
-    if (powerup.state === 'collected') continue;
-    ctx.fillStyle = '#f2c94c'; ctx.beginPath();
-    ctx.arc(powerup.x + powerup.width / 2, powerup.y + powerup.height / 2, powerup.width / 2, 0, Math.PI * 2);
-    ctx.fill(); ctx.strokeStyle = '#8a5a00'; ctx.lineWidth = 2; ctx.stroke();
+
+  function drawSoil(block, index) {
+    const { x, y, width, height, type, hp, maxHp } = block;
+    sprite(`${soilSprites[type]}-${index % 3 + 1}`, x, y, width, height);
+    if (hp < maxHp) {
+      const center = x + width / 2;
+      ctx.fillStyle = '#2a1a32';
+      ctx.fillRect(center - 4, y + 2, 4, 7);
+      ctx.fillRect(center - 2, y + 8, 6, 4);
+      ctx.fillRect(center + 2, y + 11, 4, 7);
+      ctx.fillRect(center + 4, y + 17, 6, 4);
+      ctx.fillRect(center + 8, y + 20, 4, height - 22);
+      ctx.fillRect(center - 5, y + 12, 9, 3);
+      ctx.fillStyle = '#deabc1';
+      ctx.fillRect(center + 12, y + 21, 2, 6);
+      ctx.fillRect(center + 6, y + 11, 2, 6);
+    }
   }
-  ctx.fillStyle = '#555555'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.font = '14px Arial, sans-serif';
-  ctx.fillText(controller.phase === 'playing' && !controller.hasLaunched ? 'Space or click to throw' : 'Clear the blocks below fruit so it can fall', width / 2, 634);
+
+  function drawPlayer(player) {
+    const movement = previousPlayerX === null ? 0 : player.x - previousPlayerX;
+    if (movement) {
+      facing = Math.sign(movement);
+      steps += Math.abs(movement);
+    }
+    previousPlayerX = player.x;
+    const frame = movement ? 1 + Math.floor(steps / 13) % 2 : 1;
+
+    ctx.save();
+    ctx.translate(Math.round(player.x + player.width / 2), player.y);
+    ctx.scale(facing, 1);
+    sprite(`clown-${frame}`, -25, 0, 50, player.height);
+    ctx.restore();
+  }
+
+  function drawBall(ball) {
+    const { x, y, radius, state, empowered } = ball;
+    if (state === 'grounded') {
+      ctx.strokeStyle = '#ffc86a';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 12, -Math.PI / 2, -Math.PI / 2 + Math.max(0, 1 - ball.floorTime / 3) * TAU);
+      ctx.stroke();
+    } else if (empowered) {
+      const speed = Math.hypot(ball.vx, ball.vy) || 1;
+      ctx.fillStyle = '#3ae4dc';
+      for (let dot = 1; dot <= 5; dot++) {
+        const size = 9 - dot;
+        const offset = 7 + dot * 6;
+        ctx.globalAlpha = (6 - dot) / 8;
+        ctx.fillRect(Math.round(x - ball.vx / speed * offset - size / 2),
+          Math.round(y - ball.vy / speed * offset - size / 2), size, size);
+      }
+      ctx.globalAlpha = 1;
+    }
+    sprite(empowered ? 'burst-ball' : 'ball', x - radius, y - radius, radius * 2, radius * 2);
+  }
+
+  function drawParticles(dt) {
+    for (const particle of particles) {
+      particle.age += dt;
+      const { x, y, age, life, vx, vy, size, color } = particle;
+      if (age >= life) continue;
+      ctx.globalAlpha = 1 - age / life;
+      ctx.fillStyle = color;
+      ctx.fillRect(Math.round(x + vx * age), Math.round(y + vy * age + 165 * age ** 2), size, size);
+    }
+    ctx.globalAlpha = 1;
+    particles = particles.filter(particle => particle.age < particle.life);
+  }
+
+  return {
+    reset() {
+      previousPlayerX = null;
+      facing = 1;
+      steps = 0;
+      particles = [];
+    },
+    onBlockDestroyed(block) {
+      const colors = soilDebris[block.type];
+      for (let index = 0; index < 10; index++) {
+        particles.push({
+          x: block.x + block.width * (index + 1) / 11,
+          y: block.y + block.height / 2,
+          vx: 19 * (index - 4.5),
+          vy: -32 - index % 4 * 28,
+          size: 3 + index % 4,
+          color: colors[index % colors.length],
+          age: 0,
+          life: .28 + index % 4 * .06,
+        });
+      }
+    },
+    render(system, controller, dt) {
+      ctx.imageSmoothingEnabled = false;
+      ctx.fillStyle = '#211c31';
+      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      sprite('cavern', 0, 0, ctx.canvas.width, ctx.canvas.height);
+
+      system.blocks.forEach((block, index) => {
+        if (!block.destroyed) drawSoil(block, index);
+      });
+      drawParticles(dt);
+      system.fruits.forEach((fruit, index) => {
+        if (fruit.state === 'hidden' || fruit.state === 'collected') return;
+        sprite(fruitSprites[index % fruitSprites.length], fruit.x, fruit.y - 2, fruit.width, fruit.height + 2);
+      });
+      for (const powerup of system.powerups) {
+        if (powerup.state === 'collected') continue;
+        const { x, y, width, height } = powerup;
+        ctx.fillStyle = '#5cfbe433';
+        ctx.fillRect(Math.round(x + 2), Math.round(y - 2), width - 4, height + 2);
+        ctx.fillRect(Math.round(x - 2), Math.round(y + 2), width + 4, height - 4);
+        sprite('burst', x, y, width, height);
+      }
+      drawPlayer(controller.player);
+      for (const ball of controller.balls) drawBall(ball);
+    },
+  };
 }

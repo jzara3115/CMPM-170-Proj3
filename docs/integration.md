@@ -45,5 +45,5 @@ Count hidden and revealed fruit together. Revealing does not reduce the count; c
   球模块需要避免同一次接触重复扣耐久；水果会停在未破坏的土块上，支撑清除后继续下落。
 - The demo allows a serve/startup grace period rather than losing a life immediately while all balls are held. Confirm the final timing and rules with the team.
   演示保留开局和发球宽限时间，避免持有所有球时立即失去生命；最终时长和规则需团队确认。
-- Agree on who owns pickup bounds, level resets, and the final art. The placeholders do not require asset searches.
-  明确拾取范围、关卡重置和最终美术的负责人；占位版本无需寻找素材。
+- Agree on who owns pickup bounds and level resets. Prototype 2 loads its sprites from `assets/` and renders them independently of collision bounds.
+  明确拾取范围和关卡重置的负责人。原型 2 从 `assets/` 加载像素素材，渲染独立于碰撞范围。

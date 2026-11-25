@@ -3,18 +3,15 @@
 A browser game prototype inspired by Breakout and Mr. Do!, based on the team's **CMPM 170 Design Doc - Breakin**.
 基于团队设计文档的浏览器游戏原型，玩法参考 Breakout 与 Mr. Do!。
 
-WEB BUILD: https://jzara3115.github.io/CMPM-170-Proj3/
+[GitHub Pages deployment / 线上部署](https://jzara3115.github.io/CMPM-170-Proj3/)
 
-This work covers project setup and dirt-block/fruit gameplay code. The player and ball controller is a temporary demo for testing integration; teammates can replace it.
-本次工作包含项目环境搭建，以及土块和水果的玩法代码。玩家与球的控制器用于演示和联调，可由队友替换。
-
-The prototype intentionally uses plain rectangles and circles to validate mechanics. The block/fruit gameplay loop is implemented with a replaceable player/ball demo. Ball feel, difficulty balance, and provisional rules still need team playtesting and confirmation.
-原型刻意使用简单的矩形和圆形验证机制。土块和水果的玩法流程已实现，并配有可替换的玩家与球演示逻辑。球的手感、难度平衡和暂定规则仍需团队试玩并确认。
+Prototype 2 adds original pixel art for the clown, fruit, three soil types, and juggling balls. Pick up a Burst charge to send the next ball straight through any soil it touches.
+原型 2 加入原创像素美术，包括小丑、水果、三种土块和杂耍球。拾取穿透道具后，下一颗抛出的球会击碎并穿过沿途的土块。
 
 ## Run locally / 本地运行
 
-Install Node.js 20 or newer. No external packages, engine, or image assets are required.
-需要 Node.js 20 或更新版本，无需安装第三方依赖、游戏引擎或图片素材。
+Install Node.js 20 or newer. The pixel art is bundled in `assets/`. No package installation or game engine is required.
+需要 Node.js 20 或更新版本，像素素材已包含在 `assets/`，无需安装第三方依赖或游戏引擎。
 
 From this folder / 在本目录运行：
 
@@ -52,6 +49,4 @@ Tests cover block durability, fruit support and falling, collection, reset, and 
 - `src/demo/controller.js`: replaceable player/ball demo / 可替换的玩家和球演示逻辑。
 - `src/main.js`: browser entry and presentation / 网页入口与画面。
 - [Integration notes / 接入说明](docs/integration.md): module boundaries and decisions to confirm / 模块边界与待确认事项。
-
-All graphics are placeholders drawn in code. Art can be added without changing the gameplay contract.
-全部画面均为代码绘制的占位图形，后续可在保留玩法接口的情况下加入美术素材。
+- `src/render.js` and `assets/`: art and effects / 美术与特效。
