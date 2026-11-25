@@ -4,8 +4,8 @@ const segmentIntersectsRect = (x1, y1, x2, y2, rect) => {
   const left = rect.x, right = rect.x + rect.width, top = rect.y, bottom = rect.y + rect.height;
   const dx = x2 - x1, dy = y2 - y1;
   let near = 0, far = 1;
-  for (const [p, q, r] of [[-dx, x1 - left, left], [dx, right - x1, right], [-dy, y1 - top, top], [dy, bottom - y1, bottom]]) {
-    if (p === 0) { if (q > 0) return false; }
+  for (const [p, q] of [[-dx, x1 - left], [dx, right - x1], [-dy, y1 - top], [dy, bottom - y1]]) {
+    if (p === 0) { if (q < 0) return false; }
     else {
       const t = q / p;
       if (p < 0) { if (t > far) return false; near = Math.max(near, t); }
@@ -26,7 +26,6 @@ export class DemoController {
     this.player = { x: width / 2 - 23, y: floorY - 44, width: 46, height: 44 };
     this.balls = [];
     this.heldBalls = 3;
-    this.launchSide = 1;
     this.launchCooldown = 0;
     this.hasLaunched = false;
     this.allHeldTime = 0;
@@ -42,8 +41,16 @@ export class DemoController {
       this.onEvent({ type: 'powerup-used' });
     }
     const speed = 1 + this.stage * 0.1;
-    this.balls.push({ x: this.player.x + this.player.width / 2 + this.launchSide * 12, y: this.player.y - 9, vx: this.launchSide * 165 * speed, vy: -850 * speed, radius: 7, state: 'airborne', floorTime: 0, empowered });
-    this.launchSide *= -1;
+    this.balls.push({
+      x: this.player.x + this.player.width / 2,
+      y: this.player.y - 9,
+      vx: 0,
+      vy: -850 * speed,
+      radius: 7,
+      state: 'airborne',
+      floorTime: 0,
+      empowered,
+    });
     this.heldBalls--;
     this.launchCooldown = 0.18;
     this.hasLaunched = true;

@@ -27,8 +27,8 @@ If npm is available, `npm run dev` starts the same server.
 
 ## Play / 操作
 
-Move with A/D or the left/right arrow keys. Throw with Space or a click. Up to three balls can be active.
-使用 A/D 或左右方向键移动，空格或点击抛球，最多同时使用三个球。
+Move with A/D or the left/right arrow keys to aim. Press Space or click to throw straight up. Up to three balls can be active.
+用 A/D 或左右方向键移动瞄准，按空格或点击把球直直往上抛，最多同时使用三个球。
 
 P or Esc pauses; R restarts. Break dirt to reveal fruit, clear the blocks below it, and catch the falling fruit.
 P 或 Esc 暂停，R 重新开始。打破土块露出水果，清除其下方阻挡，再接住掉落的水果。

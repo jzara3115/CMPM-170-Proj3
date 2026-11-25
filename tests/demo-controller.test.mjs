@@ -230,3 +230,42 @@ test('powerup pickup creates a one-use empowered throw', () => {
   assert.equal(controller.powerups, 0);
   assert.equal(controller.balls[0].empowered, true);
 });
+
+test('each throw launches vertically above the player’s current position', () => {
+  const { controller } = setup();
+  controller.start();
+
+  assert.equal(controller.throwBall(), true);
+  const first = controller.balls[0];
+  assert.equal(first.x, controller.player.x + controller.player.width / 2);
+  assert.equal(first.vx, 0);
+  const initialX = first.x;
+  const initialY = first.y;
+
+  controller.update(0.2, { right: true });
+  assert.equal(first.x, initialX);
+  assert.ok(first.y < initialY);
+
+  assert.equal(controller.throwBall(), true);
+  const second = controller.balls[1];
+  assert.equal(second.x, controller.player.x + controller.player.width / 2);
+  assert.equal(second.vx, 0);
+});
+
+test('a vertical empowered throw hits thin soil it crosses between updates', () => {
+  const { controller, system } = setup();
+  system.reset([
+    { id: 'in-path', x: 430, y: 475, width: 40, height: 8, type: 'condensed' },
+    { id: 'off-path', x: 480, y: 475, width: 40, height: 8, type: 'condensed' },
+  ]);
+  controller.start();
+  controller.powerups = 1;
+  controller.throwBall();
+
+  controller.update(0.15);
+  const [inPath, offPath] = system.blocks;
+  assert.equal(inPath.destroyed, true);
+  assert.equal(offPath.hp, 2);
+  assert.equal(controller.balls[0].x, 450);
+  assert.ok(controller.balls[0].vy < 0);
+});
