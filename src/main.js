@@ -1,6 +1,6 @@
 import { BlockFruitSystem } from './game/block-fruit-system.js';
 import { LEVELS } from './game/levels.js';
-import { DemoController } from './demo/controller.js';
+import { DemoController } from './demo/controller.js?v=vertical-launch';
 import { createRenderer } from './render.js';
 
 const $ = id => document.getElementById(id);
@@ -77,7 +77,7 @@ function updateHud() {
   $('balls-count').textContent = `${controller.heldBalls} / 3`;
   $('powerup-count').textContent = `${controller.powerups} / 3`;
   $('burst-stat').classList.toggle('charged', controller.powerups > 0);
-  const statuses = { ready: 'Ready', playing: controller.hasLaunched ? 'Playing' : 'Press Space or click to throw', paused: 'Paused', 'level-clear': 'Level complete', 'game-over': 'Game over' };
+  const statuses = { ready: 'Ready', playing: controller.hasLaunched ? 'Playing' : 'Press Space or click to shoot straight up', paused: 'Paused', 'level-clear': 'Level complete', 'game-over': 'Game over' };
   $('game-status').textContent = statuses[controller.phase];
   if (controller.phase === 'playing' && clock > noticeUntil) {
     $('round-notice').textContent = controller.allHeldTime > .25 ? 'Throw a ball to keep juggling!' : controller.balls.some(ball => ball.state === 'grounded') ? 'Pick up the fallen ball!' : '';
