@@ -8,8 +8,8 @@ export const POWERUP_TYPES = Object.freeze({
   BURST: 'burst',
 });
 
-const FRUIT_WIDTH = 16;
-const FRUIT_HEIGHT = 18;
+const FRUIT_WIDTH = 28;
+const FRUIT_HEIGHT = 30;
 const SUPPORT_EPSILON = 0.05;
 
 export function rectsOverlap(a, b) {
@@ -23,9 +23,10 @@ function overlapsHorizontally(a, b) {
 
 /** Dirt durability, fruit reveal, gravity, and collection; dt is in seconds. */
 export class BlockFruitSystem {
-  constructor({ blocks = [], floorY = 600, gravity = 760, onEvent = () => {}, powerupChance = 0.18, powerupLimit = 3, rng = Math.random } = {}) {
+  constructor({ blocks = [], floorY = 600, gravity = 760, fruitGravity = gravity, onEvent = () => {}, powerupChance = 0.18, powerupLimit = 3, rng = Math.random } = {}) {
     this.floorY = floorY;
     this.gravity = gravity;
+    this.fruitGravity = fruitGravity;
     this.onEvent = onEvent;
     this.powerupChance = powerupChance;
     this.powerupLimit = powerupLimit;
@@ -67,7 +68,8 @@ export class BlockFruitSystem {
       id: `fruit-${block.id}`,
       blockId: block.id,
       x: block.x + (block.width - FRUIT_WIDTH) / 2,
-      y: block.y + (block.height - FRUIT_HEIGHT) / 2,
+      // On thin tiles align the fruit bottom with the tile so it can land on its support.
+      y: Math.min(block.y + (block.height - FRUIT_HEIGHT) / 2, block.y + block.height - FRUIT_HEIGHT),
       width: FRUIT_WIDTH,
       height: FRUIT_HEIGHT,
       vy: 0,
@@ -136,8 +138,8 @@ export class BlockFruitSystem {
       if (fruit.state === 'resting') fruit.vy = 0;
       fruit.state = 'falling';
 
-      const nextBottom = oldBottom + fruit.vy * dt + 0.5 * this.gravity * dt * dt;
-      const nextVelocity = fruit.vy + this.gravity * dt;
+      const nextBottom = oldBottom + fruit.vy * dt + 0.5 * this.fruitGravity * dt * dt;
+      const nextVelocity = fruit.vy + this.fruitGravity * dt;
       // Sweep across surfaces instead of testing only the end position. Fast
       // fruit therefore cannot tunnel through a thin block during a long frame.
       let landingY = nextBottom >= this.floorY ? this.floorY : Infinity;

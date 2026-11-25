@@ -43,7 +43,7 @@ button:focus-visible, a:focus-visible, canvas:focus-visible { outline: 2px solid
   letter-spacing: -.075em;
   text-decoration: none;
 }
-.brand img { width: 32px; height: 40px; margin: 0 4px 0 0; image-rendering: pixelated; }
+.brand img { width: 32px; height: auto; margin: 0 4px 0 0; image-rendering: pixelated; }
 .brand span { color: var(--gold); margin-left: -8px; }
 .edition, .label {
   color: var(--muted);
@@ -116,6 +116,7 @@ canvas { display: block; width: 100%; height: auto; aspect-ratio: 900 / 650; ima
 .legend img { width: 32px; height: auto; image-rendering: pixelated; justify-self: center; }
 .legend img.item { width: 18px; }
 .legend img.clown { width: 25px; }
+.legend img.fruit { width: 26px; }
 .legend strong, .legend small { display: block; font-size: .79rem; line-height: 1.25; }
 .legend small { margin-top: 2px; color: var(--muted); font-size: .68rem; }
 .controls dl { display: grid; gap: 7px; margin: 0; font-size: .74rem; }
@@ -132,7 +133,7 @@ kbd { display: inline-block; min-width: 1.13rem; padding: 2px 4px; border-radius
   .game-layout { grid-template-columns: minmax(0, 1fr); }
   .field-guide { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
   .masthead { gap: 10px; padding-bottom: 12px; }
-  .brand img { width: 24px; height: 30px; margin-right: 0; }
+  .brand img { width: 24px; margin-right: 0; }
   .edition { padding-left: 8px; font-size: .58rem; }
   .scoreboard { padding: 10px 12px; flex-wrap: wrap; }
   .stage-stat { width: 100%; }

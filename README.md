@@ -33,6 +33,9 @@ Move with A/D or the left/right arrow keys to aim. Press Space or click to throw
 P or Esc pauses; R restarts. Break dirt to reveal fruit, clear the blocks below it, and catch the falling fruit.
 P 或 Esc 暂停，R 重新开始。打破土块露出水果，清除其下方阻挡，再接住掉落的水果。
 
+Each fruit adds one to the stage counter and shows a floating +1.
+每收集一颗水果，关卡计数加一，并显示上浮的 +1。
+
 ## Check / 检查
 
 ```sh

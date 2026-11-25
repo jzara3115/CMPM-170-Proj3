@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#161321">
   <meta name="description" content="Breakin: juggle balls, tunnel through soil, and catch the buried harvest.">
-  <link rel="icon" href="./assets/orange.png" type="image/png">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="icon" href="./assets/orange.png?v=fruit-pickup" type="image/png">
+  <link rel="stylesheet" href="./styles.css?v=fruit-pickup">
   <title>Breakin · Prototype 2</title>
 </head>
 <body>
   <main class="arcade">
     <header class="masthead">
-      <a class="brand" href="./" aria-label="Breakin home"><img src="./assets/orange.png" alt="">Breakin<span aria-hidden="true">!</span></a>
+      <a class="brand" href="./" aria-label="Breakin home"><img src="./assets/orange.png?v=fruit-pickup" alt="">Breakin<span aria-hidden="true">!</span></a>
       <span class="edition">Prototype 2</span>
       <div class="header-actions">
         <button id="pause-button" type="button" aria-label="Pause game" disabled>Pause</button>
@@ -52,7 +52,7 @@
             <li><img src="./assets/topsoil-1.png" alt=""><span><strong>Topsoil</strong><small>1 hit · lets balls through</small></span></li>
             <li><img src="./assets/hard-soil-1.png" alt=""><span><strong>Hard soil</strong><small>1 hit · bounces balls</small></span></li>
             <li><img src="./assets/dense-soil-1.png" alt=""><span><strong>Condensed soil</strong><small>2 hits · bounces balls</small></span></li>
-            <li><img class="item" src="./assets/apple.png" alt=""><span><strong>Fruit</strong><small>Collect them all to advance</small></span></li>
+            <li><img class="item fruit" src="./assets/apple.png?v=fruit-pickup" alt=""><span><strong>Fruit</strong><small>Catch for +1 · collect all to advance</small></span></li>
             <li><img class="item" src="./assets/burst.png" alt=""><span><strong>Burst pickup</strong><small>Charges your next throw</small></span></li>
             <li><img class="item" src="./assets/burst-ball.png" alt=""><span><strong>Burst ball</strong><small>Breaks through every soil type</small></span></li>
             <li><img class="item clown" src="./assets/clown-1.png" alt=""><span><strong>Clown</strong><small>Catch balls, fruit, and pickups</small></span></li>
@@ -72,6 +72,6 @@
     </div>
     <noscript>Breakin needs JavaScript enabled to play.</noscript>
   </main>
-  <script type="module" src="./src/main.js?v=vertical-launch"></script>
+  <script type="module" src="./src/main.js?v=fruit-pickup"></script>
 </body>
 </html>

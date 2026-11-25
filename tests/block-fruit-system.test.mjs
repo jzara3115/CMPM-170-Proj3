@@ -270,3 +270,23 @@ test('powerups fall through live blocks to the floor', () => {
   assert.equal(powerup.state, 'resting');
   assert.equal(powerup.y + powerup.height, 300);
 });
+
+test('fruit can fall more slowly than a powerup revealed from the same block', () => {
+  const system = new BlockFruitSystem({
+    blocks: [block('source', { hasFruit: true })],
+    gravity: 760,
+    fruitGravity: 460,
+    rng: () => 0,
+  });
+  system.hitBlock('source');
+  const [fruit] = system.fruits;
+  const [powerup] = system.powerups;
+  const fruitStartY = fruit.y;
+  const powerupStartY = powerup.y;
+
+  system.update(0.5);
+
+  assert.equal(fruit.y - fruitStartY, 57.5);
+  assert.equal(powerup.y - powerupStartY, 95);
+  assert.equal(fruit.width, 28);
+});

@@ -1,7 +1,7 @@
-import { BlockFruitSystem } from './game/block-fruit-system.js';
+import { BlockFruitSystem } from './game/block-fruit-system.js?v=fruit-pickup';
 import { LEVELS } from './game/levels.js';
 import { DemoController } from './demo/controller.js?v=vertical-launch';
-import { createRenderer } from './render.js';
+import { createRenderer } from './render.js?v=fruit-pickup';
 
 const $ = id => document.getElementById(id);
 const canvas = $('game');
@@ -17,6 +17,7 @@ function onEvent(event) {
     $('round-notice').textContent = 'Burst ready! Your next throw pierces soil.';
     noticeUntil = clock + 2.3;
   }
+  if (event.type === 'fruit-collected') renderer.onFruitCollected(event.fruit);
   if (event.type === 'all-fruit-collected') pendingClear = true;
   if (event.type === 'life-lost') {
     $('round-notice').textContent = event.reason;
@@ -27,7 +28,7 @@ function loadLevel(index, lives = 3, ready = true) {
   stage = index;
   renderer.reset();
   pendingClear = false;
-  system = new BlockFruitSystem({ blocks: LEVELS[stage].blocks, floorY: FLOOR, gravity: 760, onEvent });
+  system = new BlockFruitSystem({ blocks: LEVELS[stage].blocks, floorY: FLOOR, fruitGravity: 460, onEvent });
   controller = new DemoController(system, { width: W, floorY: FLOOR, stage, lives, onEvent });
   $('round-notice').textContent = '';
   noticeUntil = 0;
@@ -97,7 +98,7 @@ function tick(time) {
       if (controller.phase === 'game-over') showOverlay();
     }
   } else accumulator = 0;
-  renderer.render(system, controller, controller.phase === 'playing' ? dt : 0);
+  renderer.render(system, controller, controller.phase === 'paused' ? 0 : dt);
   updateHud();
   requestAnimationFrame(tick);
 }

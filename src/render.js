@@ -11,7 +11,8 @@ for (const name of [
   ...Object.values(soilSprites).flatMap(soil => [1, 2, 3].map(variant => `${soil}-${variant}`)),
 ]) {
   const image = new Image();
-  image.src = new URL(`../assets/${name}.png`, import.meta.url);
+  const version = fruitSprites.includes(name) ? '?v=fruit-pickup' : '';
+  image.src = new URL(`../assets/${name}.png${version}`, import.meta.url);
   sprites[name] = image;
 }
 
@@ -22,6 +23,7 @@ export function createRenderer(ctx) {
   let facing = 1;
   let steps = 0;
   let particles = [];
+  let fruitGains = [];
 
   function sprite(name, x, y, width, height) {
     const image = sprites[name];
@@ -100,12 +102,35 @@ export function createRenderer(ctx) {
     particles = particles.filter(particle => particle.age < particle.life);
   }
 
+  function drawFruitGains(dt) {
+    const duration = .72;
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.font = 'bold 26px ui-monospace, monospace';
+    ctx.lineWidth = 4;
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#21182f';
+    ctx.fillStyle = '#d5fb8b';
+    for (const gain of fruitGains) {
+      gain.age += dt;
+      if (gain.age >= duration) continue;
+      const y = Math.round(gain.y - 48 * gain.age);
+      ctx.globalAlpha = Math.min(1, (duration - gain.age) / .25);
+      ctx.strokeText('+1', gain.x, y);
+      ctx.fillText('+1', gain.x, y);
+    }
+    ctx.restore();
+    fruitGains = fruitGains.filter(gain => gain.age < duration);
+  }
+
   return {
     reset() {
       previousPlayerX = null;
       facing = 1;
       steps = 0;
       particles = [];
+      fruitGains = [];
     },
     onBlockDestroyed(block) {
       const colors = soilDebris[block.type];
@@ -122,6 +147,11 @@ export function createRenderer(ctx) {
         });
       }
     },
+    onFruitCollected(fruit) {
+      const x = Math.round(fruit.x + fruit.width / 2);
+      const nearby = fruitGains.filter(gain => Math.abs(gain.x - x) < 30 && gain.age < .16).length;
+      fruitGains.push({ x, y: Math.round(fruit.y - 8 - nearby * 25), age: 0 });
+    },
     render(system, controller, dt) {
       ctx.imageSmoothingEnabled = false;
       ctx.fillStyle = '#211c31';
@@ -134,7 +164,7 @@ export function createRenderer(ctx) {
       drawParticles(dt);
       system.fruits.forEach((fruit, index) => {
         if (fruit.state === 'hidden' || fruit.state === 'collected') return;
-        sprite(fruitSprites[index % fruitSprites.length], fruit.x, fruit.y - 2, fruit.width, fruit.height + 2);
+        sprite(fruitSprites[index % fruitSprites.length], fruit.x, fruit.y, fruit.width, fruit.height);
       });
       for (const powerup of system.powerups) {
         if (powerup.state === 'collected') continue;
@@ -146,6 +176,7 @@ export function createRenderer(ctx) {
       }
       drawPlayer(controller.player);
       for (const ball of controller.balls) drawBall(ball);
+      if (fruitGains.length) drawFruitGains(dt);
     },
   };
 }
