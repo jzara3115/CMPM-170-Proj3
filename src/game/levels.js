@@ -1,5 +1,6 @@
 import { SOIL_TYPES } from './block-fruit-system.js';
 
+const FIRST_ROW_Y = 142; // Leave room above the soil for the in-game HUD.
 const TYPES = { T: SOIL_TYPES.TOP, H: SOIL_TYPES.HARD, C: SOIL_TYPES.CONDENSED };
 
 // Eight aligned columns leave generous space at both walls. A star marks fruit;
@@ -10,7 +11,7 @@ function makeBlocks(levelId, rows) {
     return [{
       id: `${levelId}-r${rowIndex}-c${column}`,
       x: 141 + column * 78,
-      y: 114 + rowIndex * 36,
+      y: FIRST_ROW_Y + rowIndex * 36,
       width: 72,
       height: 30,
       type: TYPES[cell[0]],

@@ -1,5 +1,5 @@
 import { BlockFruitSystem } from './game/block-fruit-system.js?v=large-fruit';
-import { LEVELS } from './game/levels.js';
+import { LEVELS } from './game/levels.js?v=hud-clearance';
 import { DemoController } from './demo/controller.js?v=arena-touch';
 import { createRenderer } from './render.js?v=burst-impact';
 
