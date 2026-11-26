@@ -1,6 +1,6 @@
 import { BlockFruitSystem } from './game/block-fruit-system.js?v=large-fruit';
 import { LEVELS } from './game/levels.js';
-import { DemoController } from './demo/controller.js?v=burst-impact';
+import { DemoController } from './demo/controller.js?v=arena-touch';
 import { createRenderer } from './render.js?v=burst-impact';
 
 const $ = id => document.getElementById(id);
@@ -8,12 +8,11 @@ const canvas = $('game');
 const guide = $('field-guide');
 const renderer = createRenderer(canvas.getContext('2d'));
 const W = 900, FLOOR = 604;
-const throwHint = matchMedia('(pointer: coarse)').matches
-  ? 'Tap Throw ball to shoot straight up' : 'Press Space or click to shoot straight up';
 const input = { left: false, right: false };
 let stage = 0, system, controller, previous = 0, accumulator = 0, pendingClear = false;
 let clock = 0, noticeUntil = 0;
 let resumeAfterGuide = false;
+let drag = null;
 
 function onEvent(event) {
   if (event.type === 'block-destroyed') renderer.onBlockDestroyed(event.block);
@@ -35,6 +34,7 @@ function onEvent(event) {
 }
 function loadLevel(index, lives = 3) {
   stage = index;
+  clearDrag();
   renderer.reset();
   pendingClear = false;
   system = new BlockFruitSystem({ blocks: LEVELS[stage].blocks, floorY: FLOOR, fruitGravity: 460, onEvent });
@@ -50,8 +50,10 @@ function showOverlay() {
   const hidden = phase === 'playing';
   $('overlay').hidden = hidden;
   $('pause-button').disabled = ['level-clear', 'game-over'].includes(phase);
-  $('pause-button').textContent = phase === 'paused' ? 'Resume' : 'Pause';
-  $('pause-button').setAttribute('aria-label', phase === 'paused' ? 'Resume game' : 'Pause game');
+  const pauseAction = phase === 'paused' ? 'Resume' : 'Pause';
+  $('pause-button').title = pauseAction;
+  $('pause-button').setAttribute('aria-label', `${pauseAction} game`);
+  $('pause-icon').src = `./assets/${pauseAction.toLowerCase()}.png`;
   const states = {
     paused: ['Paused', 'The game is paused.', 'Resume', 'Press P or Esc to resume.'],
     'level-clear': [stage === LEVELS.length - 1 ? 'Prototype complete' : 'Level complete', `Collected ${system.totalFruit} / ${system.totalFruit} fruit.`, stage === LEVELS.length - 1 ? 'Play again' : 'Next level', stage === LEVELS.length - 1 ? 'All three sample levels cleared.' : 'The balls move faster in the next level.'],
@@ -74,6 +76,7 @@ function togglePause() {
   if (!['playing', 'paused'].includes(controller.phase)) return;
   controller.phase = controller.phase === 'playing' ? 'paused' : 'playing';
   input.left = input.right = false;
+  clearDrag();
   showOverlay();
   if (controller.phase === 'playing') canvas.focus({ preventScroll: true });
 }
@@ -86,8 +89,6 @@ function updateHud() {
   $('balls-count').textContent = `${controller.heldBalls} / 3`;
   $('powerup-count').textContent = `${controller.powerups} / 3`;
   $('burst-stat').classList.toggle('charged', controller.powerups > 0);
-  const statuses = { playing: controller.hasLaunched ? 'Playing' : throwHint, paused: 'Paused', 'level-clear': 'Level complete', 'game-over': 'Game over' };
-  $('game-status').textContent = statuses[controller.phase];
   if (controller.phase === 'playing' && clock > noticeUntil) {
     $('round-notice').textContent = controller.allHeldTime > .25 ? 'Throw a ball to keep juggling!' : controller.balls.some(ball => ball.state === 'grounded') ? 'Pick up the fallen ball!' : '';
   } else if (controller.phase !== 'playing') $('round-notice').textContent = '';
@@ -110,7 +111,7 @@ function tick(time) {
   updateHud();
   requestAnimationFrame(tick);
 }
-canvas.tabIndex = 0;
+canvas.tabIndex = -1;
 $('guide-button').addEventListener('click', () => {
   resumeAfterGuide = controller.phase === 'playing';
   if (resumeAfterGuide) togglePause();
@@ -128,7 +129,44 @@ $('restart-button').addEventListener('click', () => {
   loadLevel(0);
   canvas.focus({ preventScroll: true });
 });
-canvas.addEventListener('pointerdown', event => { if (event.button === 0) { event.preventDefault(); canvas.focus({ preventScroll: true }); controller.throwBall(); } });
+function clearDrag() {
+  drag = null;
+  delete input.targetX;
+}
+canvas.addEventListener('pointerdown', event => {
+  if (event.button !== 0 || !event.isPrimary || controller.phase !== 'playing') return;
+  event.preventDefault();
+  if (event.pointerType !== 'touch') {
+    canvas.focus({ preventScroll: true });
+    controller.throwBall();
+    return;
+  }
+  drag = {
+    id: event.pointerId,
+    x: event.clientX,
+    y: event.clientY,
+    playerCenter: controller.player.x + controller.player.width / 2,
+    moved: false,
+  };
+  canvas.setPointerCapture(event.pointerId);
+});
+canvas.addEventListener('pointermove', event => {
+  if (event.pointerId !== drag?.id) return;
+  const dx = event.clientX - drag.x;
+  if (!drag.moved && Math.hypot(dx, event.clientY - drag.y) < 7) return;
+  drag.moved = true;
+  input.targetX = drag.playerCenter + dx * W / canvas.clientWidth;
+});
+canvas.addEventListener('pointerup', event => {
+  if (event.pointerId !== drag?.id) return;
+  if (!drag.moved) controller.throwBall();
+  clearDrag();
+});
+for (const eventName of ['pointercancel', 'lostpointercapture']) {
+  canvas.addEventListener(eventName, event => {
+    if (event.pointerId === drag?.id) clearDrag();
+  });
+}
 document.addEventListener('keydown', event => {
   if (guide.open || ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) return;
   const key = event.key.toLowerCase();
@@ -143,11 +181,5 @@ document.addEventListener('keydown', event => {
 document.addEventListener('keyup', event => { const key = event.key.toLowerCase(); if (key === 'a' || key === 'arrowleft') input.left = false; if (key === 'd' || key === 'arrowright') input.right = false; });
 window.addEventListener('blur', () => { input.left = input.right = false; if (controller.phase === 'playing') togglePause(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden && controller.phase === 'playing') togglePause(); });
-for (const [id, key] of [['move-left', 'left'], ['move-right', 'right']]) {
-  const button = $(id);
-  button.addEventListener('pointerdown', event => { event.preventDefault(); button.setPointerCapture(event.pointerId); input[key] = true; });
-  for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) button.addEventListener(name, () => { input[key] = false; });
-}
-$('throw-button').addEventListener('pointerdown', event => { event.preventDefault(); controller.throwBall(); });
 loadLevel(0);
 requestAnimationFrame(tick);

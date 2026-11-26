@@ -6,31 +6,31 @@
   <meta name="theme-color" content="#161321">
   <meta name="description" content="Breakin: juggle balls, tunnel through soil, and catch the buried harvest.">
   <link rel="icon" href="./assets/orange.png?v=fruit-pickup" type="image/png">
-  <link rel="stylesheet" href="./styles.css?v=game-hud">
+  <link rel="stylesheet" href="./styles.css?v=arena-hud">
   <title>Breakin · Prototype 2</title>
 </head>
 <body>
   <main class="arcade" aria-label="Breakin">
     <section class="playfield" aria-label="Breakin game">
-      <header class="scoreboard">
-        <div class="stage-stat">
-          <button class="guide-button" id="guide-button" type="button" aria-label="Open Field Guide" aria-haspopup="dialog" title="Field Guide"><img src="./assets/field-guide.png" alt=""></button>
-          <img class="stage-icon" src="./assets/stage-flag.png" alt="">
-          <div><span class="label">Stage <span id="stage-number">01</span></span><strong id="stage-name">First Harvest</strong></div>
-        </div>
-        <div class="game-stats">
-          <div class="stat"><img src="./assets/apple.png?v=fruit-pickup" alt=""><div><span class="label">Fruit</span><strong id="fruit-count">0 / 0</strong></div></div>
-          <div class="stat"><img src="./assets/life.png" alt=""><div><span class="label">Lives</span><strong id="lives" aria-label="3 lives">3</strong></div></div>
-          <div class="stat"><img src="./assets/ball.png" alt=""><div><span class="label">Balls held</span><strong id="balls-count">3 / 3</strong></div></div>
-          <div class="stat" id="burst-stat"><img src="./assets/burst.png" alt=""><div><span class="label">Burst</span><strong id="powerup-count">0 / 3</strong></div></div>
-        </div>
-        <div class="header-actions">
-          <button id="pause-button" type="button" aria-label="Pause game">Pause</button>
-          <button id="restart-button" type="button">Restart</button>
-        </div>
-      </header>
       <div class="arena">
-        <canvas id="game" width="900" height="650" aria-label="Game field. Use A and D or arrow keys to move, and Space or click to shoot up."></canvas>
+        <canvas id="game" width="900" height="650" aria-label="Game field. Use A and D or the arrow keys to move. Press Space or click to shoot. On touchscreens, drag to move and tap to shoot."></canvas>
+        <header class="scoreboard" aria-label="Game HUD">
+          <div class="stage-stat">
+            <button class="guide-button" id="guide-button" type="button" aria-label="Open Field Guide" aria-haspopup="dialog" title="Field Guide"><img src="./assets/field-guide.png" alt=""></button>
+            <img class="stage-icon" src="./assets/stage-flag.png" alt="">
+            <div><span class="label">Stage <span id="stage-number">01</span></span><strong id="stage-name">First Harvest</strong></div>
+          </div>
+          <div class="game-stats">
+            <div class="stat"><img src="./assets/apple.png?v=fruit-pickup" alt=""><div><span class="label">Fruit</span><strong id="fruit-count">0 / 0</strong></div></div>
+            <div class="stat"><img src="./assets/life.png" alt=""><div><span class="label">Lives</span><strong id="lives" aria-label="3 lives">3</strong></div></div>
+            <div class="stat"><img src="./assets/ball.png" alt=""><div><span class="label">Balls held</span><strong id="balls-count">3 / 3</strong></div></div>
+            <div class="stat" id="burst-stat"><img src="./assets/burst.png" alt=""><div><span class="label">Burst</span><strong id="powerup-count">0 / 3</strong></div></div>
+          </div>
+          <div class="header-actions">
+            <button class="hud-button" id="pause-button" type="button" aria-label="Pause game" title="Pause"><img id="pause-icon" src="./assets/pause.png" alt=""></button>
+            <button class="hud-button" id="restart-button" type="button" aria-label="Restart game" title="Restart"><img src="./assets/restart.png" alt=""></button>
+          </div>
+        </header>
         <div class="overlay" id="overlay" hidden>
           <div class="overlay-card">
             <h1 id="overlay-title"></h1>
@@ -41,8 +41,6 @@
         </div>
         <div class="round-notice" id="round-notice" role="status" aria-live="polite"></div>
       </div>
-      <div class="game-bottom"><span id="game-status" role="status">Press Space or click to shoot straight up</span><span>Clear the soil below fruit so it can fall.</span></div>
-      <div class="touch-controls" aria-label="Touch game controls"><button id="move-left" type="button">Left</button><button id="throw-button" type="button">Throw ball</button><button id="move-right" type="button">Right</button></div>
 
       <dialog class="field-guide" id="field-guide" aria-labelledby="guide-title">
         <header class="guide-heading">
@@ -69,6 +67,7 @@
               <div><dt>Shoot up</dt><dd><kbd>Space</kbd> or click</dd></div>
               <div><dt>Pause</dt><dd><kbd>P</kbd> or <kbd>Esc</kbd></dd></div>
               <div><dt>Restart</dt><dd><kbd>R</kbd></dd></div>
+              <div><dt>Touch</dt><dd>Drag to move, tap to shoot</dd></div>
             </dl>
           </section>
         </div>
@@ -76,6 +75,6 @@
     </section>
     <noscript>Breakin needs JavaScript enabled to play.</noscript>
   </main>
-  <script type="module" src="./src/main.js?v=game-hud"></script>
+  <script type="module" src="./src/main.js?v=arena-hud"></script>
 </body>
 </html>

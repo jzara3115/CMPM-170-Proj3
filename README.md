@@ -30,8 +30,8 @@ If npm is available, `npm run dev` starts the same server.
 The game opens directly into the first stage. Open the pixel book in the top left for the Field Guide and controls.
 页面打开后直接进入第一关。点击左上角的像素书图标可以查看图鉴和操作说明。
 
-Move with A/D or the left/right arrow keys to aim. Press Space or click to throw straight up. Up to three balls can be active.
-用 A/D 或左右方向键移动瞄准，按空格或点击把球直直往上抛，最多同时使用三个球。
+Move with A/D or the left/right arrow keys to aim. Press Space or click to throw straight up. On touchscreens, drag in the cave to move and tap to shoot. Up to three balls can be active.
+用 A/D 或左右方向键移动瞄准，按空格或点击把球直直往上抛。触屏上在洞穴内左右拖动瞄准，轻点发球。最多同时使用三个球。
 
 P or Esc pauses; R restarts. Break dirt to reveal fruit, clear the blocks below it, and catch the falling fruit.
 P 或 Esc 暂停，R 重新开始。打破土块露出水果，清除其下方阻挡，再接住掉落的水果。

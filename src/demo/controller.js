@@ -63,7 +63,12 @@ export class DemoController {
     if (this.phase !== 'playing') return;
     this.launchCooldown = Math.max(0, this.launchCooldown - dt);
     const direction = Number(Boolean(input.right)) - Number(Boolean(input.left));
-    this.player.x = Math.max(37, Math.min(this.width - 37 - this.player.width, this.player.x + direction * 430 * dt));
+    const step = 430 * dt;
+    const center = this.player.x + this.player.width / 2;
+    const movement = input.targetX === undefined
+      ? direction * step
+      : Math.max(-step, Math.min(step, input.targetX - center));
+    this.player.x = Math.max(37, Math.min(this.width - 37 - this.player.width, this.player.x + movement));
     let dropped = false;
     const kept = [];
     for (const ball of this.balls) {
