@@ -53,7 +53,8 @@ function showOverlay() {
   const pauseAction = phase === 'paused' ? 'Resume' : 'Pause';
   $('pause-button').title = pauseAction;
   $('pause-button').setAttribute('aria-label', `${pauseAction} game`);
-  $('pause-icon').src = `./assets/${pauseAction.toLowerCase()}.png`;
+  $('pause-icon').hidden = phase === 'paused';
+  $('resume-icon').hidden = phase !== 'paused';
   const states = {
     paused: ['Paused', 'The game is paused.', 'Resume', 'Press P or Esc to resume.'],
     'level-clear': [stage === LEVELS.length - 1 ? 'Prototype complete' : 'Level complete', `Collected ${system.totalFruit} / ${system.totalFruit} fruit.`, stage === LEVELS.length - 1 ? 'Play again' : 'Next level', stage === LEVELS.length - 1 ? 'All three sample levels cleared.' : 'The balls move faster in the next level.'],

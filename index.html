@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#161321">
   <meta name="description" content="Breakin: juggle balls, tunnel through soil, and catch the buried harvest.">
   <link rel="icon" href="./assets/orange.png?v=fruit-pickup" type="image/png">
-  <link rel="stylesheet" href="./styles.css?v=arena-hud">
+  <link rel="stylesheet" href="./styles.css?v=cave-ui">
   <title>Breakin · Prototype 2</title>
 </head>
 <body>
@@ -27,7 +27,7 @@
             <div class="stat" id="burst-stat"><img src="./assets/burst.png" alt=""><div><span class="label">Burst</span><strong id="powerup-count">0 / 3</strong></div></div>
           </div>
           <div class="header-actions">
-            <button class="hud-button" id="pause-button" type="button" aria-label="Pause game" title="Pause"><img id="pause-icon" src="./assets/pause.png" alt=""></button>
+            <button class="hud-button" id="pause-button" type="button" aria-label="Pause game" title="Pause"><img id="pause-icon" src="./assets/pause.png" alt=""><img id="resume-icon" src="./assets/resume.png" alt="" hidden></button>
             <button class="hud-button" id="restart-button" type="button" aria-label="Restart game" title="Restart"><img src="./assets/restart.png" alt=""></button>
           </div>
         </header>
@@ -75,6 +75,6 @@
     </section>
     <noscript>Breakin needs JavaScript enabled to play.</noscript>
   </main>
-  <script type="module" src="./src/main.js?v=arena-hud"></script>
+  <script type="module" src="./src/main.js?v=cave-ui"></script>
 </body>
 </html>
