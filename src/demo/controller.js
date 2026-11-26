@@ -93,8 +93,15 @@ export class DemoController {
           const hitTrajectory = segmentIntersectsRect(oldX, oldY, ball.x, ball.y, block)
             || overlaps(ballRect, block);
           if (hitTrajectory) {
-            let remaining = block.hp;
+            const remaining = block.hp;
             for (let hit = 0; hit < remaining; hit++) this.system.hitBlock(block.id);
+            this.onEvent({
+              type: 'burst-pierced',
+              blockId: block.id,
+              x: Math.max(block.x, Math.min(ball.x, block.x + block.width)),
+              y: Math.max(block.y, Math.min(ball.y, block.y + block.height)),
+              direction: Math.sign(ball.vy),
+            });
           }
           continue;
         }

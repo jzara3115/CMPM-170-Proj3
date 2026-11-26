@@ -253,7 +253,7 @@ test('each throw launches vertically above the player’s current position', () 
 });
 
 test('a vertical empowered throw hits thin soil it crosses between updates', () => {
-  const { controller, system } = setup();
+  const { controller, system, events } = setup();
   system.reset([
     { id: 'in-path', x: 430, y: 475, width: 40, height: 8, type: 'condensed' },
     { id: 'off-path', x: 480, y: 475, width: 40, height: 8, type: 'condensed' },
@@ -266,6 +266,9 @@ test('a vertical empowered throw hits thin soil it crosses between updates', () 
   const [inPath, offPath] = system.blocks;
   assert.equal(inPath.destroyed, true);
   assert.equal(offPath.hp, 2);
+  const piercingEvents = events.filter(event => event.type === 'burst-pierced');
+  assert.deepEqual(piercingEvents.map(event => event.blockId), ['in-path']);
+  assert.deepEqual([piercingEvents[0].x, piercingEvents[0].direction], [450, -1]);
   assert.equal(controller.balls[0].x, 450);
   assert.ok(controller.balls[0].vy < 0);
 });

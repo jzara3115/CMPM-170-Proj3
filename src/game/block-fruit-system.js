@@ -8,8 +8,8 @@ export const POWERUP_TYPES = Object.freeze({
   BURST: 'burst',
 });
 
-const FRUIT_WIDTH = 28;
-const FRUIT_HEIGHT = 30;
+const FRUIT_WIDTH = 42;
+const FRUIT_HEIGHT = 45;
 const SUPPORT_EPSILON = 0.05;
 
 export function rectsOverlap(a, b) {

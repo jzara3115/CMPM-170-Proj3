@@ -24,6 +24,7 @@ export function createRenderer(ctx) {
   let steps = 0;
   let particles = [];
   let fruitGains = [];
+  let burstImpacts = [];
 
   function sprite(name, x, y, width, height) {
     const image = sprites[name];
@@ -102,13 +103,39 @@ export function createRenderer(ctx) {
     particles = particles.filter(particle => particle.age < particle.life);
   }
 
+  function drawBurstImpacts(dt) {
+    const duration = .34;
+    for (const impact of burstImpacts) {
+      impact.age += dt;
+      if (impact.age >= duration) continue;
+      const { x, y } = impact;
+      const progress = impact.age / duration;
+      const span = Math.round(9 + 33 * progress);
+      const height = Math.round(4 + 12 * progress);
+      ctx.globalAlpha = 1 - progress;
+      ctx.fillStyle = '#32c8df';
+      ctx.fillRect(x - span, y - 2, span * 2, 4);
+      ctx.fillStyle = '#8df8f1';
+      ctx.fillRect(x - span, y - height, 4, height * 2);
+      ctx.fillRect(x + span - 4, y - height, 4, height * 2);
+      ctx.fillRect(x - span + 4, y - height, 7, 2);
+      ctx.fillRect(x + span - 11, y + height - 2, 7, 2);
+      if (progress < .28) {
+        ctx.fillStyle = '#fff5a5';
+        ctx.fillRect(x - 4, y - 4, 8, 8);
+      }
+    }
+    ctx.globalAlpha = 1;
+    burstImpacts = burstImpacts.filter(impact => impact.age < duration);
+  }
+
   function drawFruitGains(dt) {
-    const duration = .72;
+    const duration = .9;
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
-    ctx.font = 'bold 26px ui-monospace, monospace';
-    ctx.lineWidth = 4;
+    ctx.font = 'bold 40px ui-monospace, monospace';
+    ctx.lineWidth = 6;
     ctx.lineJoin = 'round';
     ctx.strokeStyle = '#21182f';
     ctx.fillStyle = '#d5fb8b';
@@ -131,6 +158,7 @@ export function createRenderer(ctx) {
       steps = 0;
       particles = [];
       fruitGains = [];
+      burstImpacts = [];
     },
     onBlockDestroyed(block) {
       const colors = soilDebris[block.type];
@@ -147,10 +175,29 @@ export function createRenderer(ctx) {
         });
       }
     },
+    onBurstPierced({ x, y, direction }) {
+      x = Math.round(x);
+      y = Math.round(y);
+      burstImpacts.push({ x, y, age: 0 });
+      for (const side of [-1, 1]) {
+        for (let index = 0; index < 4; index++) {
+          particles.push({
+            x: x + 3 * side,
+            y,
+            vx: side * (53 + index * 22),
+            vy: direction * (45 + index * 28),
+            size: index === 0 ? 5 : 3,
+            color: index === 0 ? '#fff5a5' : '#78f5ee',
+            age: 0,
+            life: .23 + index * .055,
+          });
+        }
+      }
+    },
     onFruitCollected(fruit) {
       const x = Math.round(fruit.x + fruit.width / 2);
-      const nearby = fruitGains.filter(gain => Math.abs(gain.x - x) < 30 && gain.age < .16).length;
-      fruitGains.push({ x, y: Math.round(fruit.y - 8 - nearby * 25), age: 0 });
+      const nearby = fruitGains.filter(gain => Math.abs(gain.x - x) < 48 && gain.age < .16).length;
+      fruitGains.push({ x, y: Math.round(fruit.y - 6 - nearby * 40), age: 0 });
     },
     render(system, controller, dt) {
       ctx.imageSmoothingEnabled = false;
@@ -162,6 +209,7 @@ export function createRenderer(ctx) {
         if (!block.destroyed) drawSoil(block, index);
       });
       drawParticles(dt);
+      if (burstImpacts.length) drawBurstImpacts(dt);
       system.fruits.forEach((fruit, index) => {
         if (fruit.state === 'hidden' || fruit.state === 'collected') return;
         sprite(fruitSprites[index % fruitSprites.length], fruit.x, fruit.y, fruit.width, fruit.height);

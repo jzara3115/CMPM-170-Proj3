@@ -27,6 +27,9 @@ If npm is available, `npm run dev` starts the same server.
 
 ## Play / 操作
 
+The game opens directly into the first stage. Open the pixel book in the top left for the Field Guide and controls.
+页面打开后直接进入第一关。点击左上角的像素书图标可以查看图鉴和操作说明。
+
 Move with A/D or the left/right arrow keys to aim. Press Space or click to throw straight up. Up to three balls can be active.
 用 A/D 或左右方向键移动瞄准，按空格或点击把球直直往上抛，最多同时使用三个球。
 

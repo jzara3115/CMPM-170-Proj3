@@ -288,5 +288,4 @@ test('fruit can fall more slowly than a powerup revealed from the same block', (
 
   assert.equal(fruit.y - fruitStartY, 57.5);
   assert.equal(powerup.y - powerupStartY, 95);
-  assert.equal(fruit.width, 28);
 });

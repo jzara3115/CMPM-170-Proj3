@@ -6,72 +6,76 @@
   <meta name="theme-color" content="#161321">
   <meta name="description" content="Breakin: juggle balls, tunnel through soil, and catch the buried harvest.">
   <link rel="icon" href="./assets/orange.png?v=fruit-pickup" type="image/png">
-  <link rel="stylesheet" href="./styles.css?v=fruit-pickup">
+  <link rel="stylesheet" href="./styles.css?v=game-hud">
   <title>Breakin · Prototype 2</title>
 </head>
 <body>
-  <main class="arcade">
-    <header class="masthead">
-      <a class="brand" href="./" aria-label="Breakin home"><img src="./assets/orange.png?v=fruit-pickup" alt="">Breakin<span aria-hidden="true">!</span></a>
-      <span class="edition">Prototype 2</span>
-      <div class="header-actions">
-        <button id="pause-button" type="button" aria-label="Pause game" disabled>Pause</button>
-        <button id="restart-button" type="button">Restart</button>
+  <main class="arcade" aria-label="Breakin">
+    <section class="playfield" aria-label="Breakin game">
+      <header class="scoreboard">
+        <div class="stage-stat">
+          <button class="guide-button" id="guide-button" type="button" aria-label="Open Field Guide" aria-haspopup="dialog" title="Field Guide"><img src="./assets/field-guide.png" alt=""></button>
+          <img class="stage-icon" src="./assets/stage-flag.png" alt="">
+          <div><span class="label">Stage <span id="stage-number">01</span></span><strong id="stage-name">First Harvest</strong></div>
+        </div>
+        <div class="game-stats">
+          <div class="stat"><img src="./assets/apple.png?v=fruit-pickup" alt=""><div><span class="label">Fruit</span><strong id="fruit-count">0 / 0</strong></div></div>
+          <div class="stat"><img src="./assets/life.png" alt=""><div><span class="label">Lives</span><strong id="lives" aria-label="3 lives">3</strong></div></div>
+          <div class="stat"><img src="./assets/ball.png" alt=""><div><span class="label">Balls held</span><strong id="balls-count">3 / 3</strong></div></div>
+          <div class="stat" id="burst-stat"><img src="./assets/burst.png" alt=""><div><span class="label">Burst</span><strong id="powerup-count">0 / 3</strong></div></div>
+        </div>
+        <div class="header-actions">
+          <button id="pause-button" type="button" aria-label="Pause game">Pause</button>
+          <button id="restart-button" type="button">Restart</button>
+        </div>
+      </header>
+      <div class="arena">
+        <canvas id="game" width="900" height="650" aria-label="Game field. Use A and D or arrow keys to move, and Space or click to shoot up."></canvas>
+        <div class="overlay" id="overlay" hidden>
+          <div class="overlay-card">
+            <h1 id="overlay-title"></h1>
+            <p id="overlay-description"></p>
+            <button id="start-button" type="button"></button>
+            <p class="overlay-footnote" id="overlay-footnote"></p>
+          </div>
+        </div>
+        <div class="round-notice" id="round-notice" role="status" aria-live="polite"></div>
       </div>
-    </header>
-    <div class="game-layout">
-      <section class="cabinet" aria-label="Breakin game">
-        <div class="scoreboard">
-          <div class="stage-stat"><span class="label">Stage <span id="stage-number">01</span></span><strong id="stage-name">First Harvest</strong></div>
-          <div class="game-stats">
-            <div class="stat"><span class="label">Fruit</span><strong id="fruit-count">0 / 0</strong></div>
-            <div class="stat"><span class="label">Lives</span><strong id="lives" aria-label="3 lives">3</strong></div>
-            <div class="stat"><span class="label">Balls held</span><strong id="balls-count">3 / 3</strong></div>
-            <div class="stat" id="burst-stat"><span class="label">Burst</span><strong id="powerup-count">0 / 3</strong></div>
+      <div class="game-bottom"><span id="game-status" role="status">Press Space or click to shoot straight up</span><span>Clear the soil below fruit so it can fall.</span></div>
+      <div class="touch-controls" aria-label="Touch game controls"><button id="move-left" type="button">Left</button><button id="throw-button" type="button">Throw ball</button><button id="move-right" type="button">Right</button></div>
+
+      <dialog class="field-guide" id="field-guide" aria-labelledby="guide-title">
+        <header class="guide-heading">
+          <h1 id="guide-title"><img src="./assets/field-guide.png" alt="">Field Guide</h1>
+          <form method="dialog"><button type="submit" autofocus>Close</button></form>
+        </header>
+        <div class="guide-body">
+          <div>
+            <ul class="legend">
+              <li><img src="./assets/topsoil-1.png" alt=""><span><strong>Topsoil</strong><small>1 hit · lets balls through</small></span></li>
+              <li><img src="./assets/hard-soil-1.png" alt=""><span><strong>Hard soil</strong><small>1 hit · bounces balls</small></span></li>
+              <li><img src="./assets/dense-soil-1.png" alt=""><span><strong>Condensed soil</strong><small>2 hits · bounces balls</small></span></li>
+              <li><img class="item fruit" src="./assets/apple.png?v=fruit-pickup" alt=""><span><strong>Fruit</strong><small>Catch for +1 · collect all to advance</small></span></li>
+              <li><img class="item" src="./assets/burst.png" alt=""><span><strong>Burst pickup</strong><small>Charges your next throw</small></span></li>
+              <li><img class="item" src="./assets/burst-ball.png" alt=""><span><strong>Burst ball</strong><small>Pierces soil · even condensed blocks</small></span></li>
+              <li><img class="item clown" src="./assets/clown-1.png" alt=""><span><strong>Clown</strong><small>Catch balls, fruit, and pickups</small></span></li>
+              <li><img class="item" src="./assets/ball.png" alt=""><span><strong>Juggling ball</strong><small>Recover it before the ring runs out</small></span></li>
+            </ul>
           </div>
+          <section class="controls" aria-labelledby="controls-title">
+            <h2 id="controls-title">Controls</h2>
+            <dl>
+              <div><dt>Move &amp; aim</dt><dd><kbd>A</kbd> <kbd>D</kbd> or <kbd>←</kbd> <kbd>→</kbd></dd></div>
+              <div><dt>Shoot up</dt><dd><kbd>Space</kbd> or click</dd></div>
+              <div><dt>Pause</dt><dd><kbd>P</kbd> or <kbd>Esc</kbd></dd></div>
+              <div><dt>Restart</dt><dd><kbd>R</kbd></dd></div>
+            </dl>
+          </section>
         </div>
-        <div class="playfield">
-          <canvas id="game" width="900" height="650" aria-label="Game field. Use A and D or arrow keys to move, and Space or click to throw a ball."></canvas>
-          <div class="overlay" id="overlay">
-            <div class="overlay-card">
-              <h1 id="overlay-title">Breakin</h1>
-              <p id="overlay-description">Break blocks and collect all fruit. Keep at least one ball in the air.</p>
-              <button id="start-button" type="button">Start</button>
-              <p class="overlay-footnote" id="overlay-footnote">Move with A / D or ← / →. Throw with Space or click.</p>
-            </div>
-          </div>
-          <div class="round-notice" id="round-notice" role="status" aria-live="polite"></div>
-        </div>
-        <div class="game-bottom"><span id="game-status" role="status">Ready</span><span>Clear the soil below fruit so it can fall.</span></div>
-        <div class="touch-controls" aria-label="Touch game controls"><button id="move-left" type="button">Left</button><button id="throw-button" type="button">Throw ball</button><button id="move-right" type="button">Right</button></div>
-      </section>
-      <aside class="field-guide" aria-label="Game guide">
-        <section class="guide-panel">
-          <h2>Field Guide</h2>
-          <ul class="legend">
-            <li><img src="./assets/topsoil-1.png" alt=""><span><strong>Topsoil</strong><small>1 hit · lets balls through</small></span></li>
-            <li><img src="./assets/hard-soil-1.png" alt=""><span><strong>Hard soil</strong><small>1 hit · bounces balls</small></span></li>
-            <li><img src="./assets/dense-soil-1.png" alt=""><span><strong>Condensed soil</strong><small>2 hits · bounces balls</small></span></li>
-            <li><img class="item fruit" src="./assets/apple.png?v=fruit-pickup" alt=""><span><strong>Fruit</strong><small>Catch for +1 · collect all to advance</small></span></li>
-            <li><img class="item" src="./assets/burst.png" alt=""><span><strong>Burst pickup</strong><small>Charges your next throw</small></span></li>
-            <li><img class="item" src="./assets/burst-ball.png" alt=""><span><strong>Burst ball</strong><small>Breaks through every soil type</small></span></li>
-            <li><img class="item clown" src="./assets/clown-1.png" alt=""><span><strong>Clown</strong><small>Catch balls, fruit, and pickups</small></span></li>
-            <li><img class="item" src="./assets/ball.png" alt=""><span><strong>Juggling ball</strong><small>Recover it before the ring runs out</small></span></li>
-          </ul>
-        </section>
-        <section class="guide-panel controls">
-          <h2>Controls</h2>
-          <dl>
-            <div><dt>Move &amp; aim</dt><dd><kbd>A</kbd> <kbd>D</kbd> or <kbd>←</kbd> <kbd>→</kbd></dd></div>
-            <div><dt>Shoot up</dt><dd><kbd>Space</kbd> or click</dd></div>
-            <div><dt>Pause</dt><dd><kbd>P</kbd> or <kbd>Esc</kbd></dd></div>
-            <div><dt>Restart</dt><dd><kbd>R</kbd></dd></div>
-          </dl>
-        </section>
-      </aside>
-    </div>
+      </dialog>
+    </section>
     <noscript>Breakin needs JavaScript enabled to play.</noscript>
   </main>
-  <script type="module" src="./src/main.js?v=fruit-pickup"></script>
+  <script type="module" src="./src/main.js?v=game-hud"></script>
 </body>
 </html>
